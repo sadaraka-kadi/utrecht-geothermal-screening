@@ -1,4 +1,4 @@
-# probable-eureka
+# utrecht-geothermal-screening
 **Geothermal Energy Assessment & Site Screening — Utrecht, Netherlands**
 
 This repository contains Kadi Sadaraka's refinement and further development of Team KDK's submission for the SPE Africa Datathon 2026, analysing geothermal energy data from Utrecht, Netherlands.
