@@ -71,7 +71,7 @@ pip install pythermogis --index-url https://ci.tno.nl/gitlab/api/v4/projects/182
 01_data_exploration.ipynb
 02_utrecht_formation_coverage.ipynb
 03_reservoir_quality_assessment.ipynb
-04_power_calculations.ipynb
+04_power_economics.ipynb
 ```
 
 > **Note:** Run cells in order within each notebook. Processed files will be automatically saved to `data/processed/` and simulation outputs to `outputs/`.
