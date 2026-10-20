@@ -17,9 +17,14 @@ Reproduces:
   - LCOE solved as the flat €/GJ price that makes the equity investor's NPV
     equal to their equity outlay
 
+Section "System-level cost" (bottom of this file) was added for the heating + cooling
+system study: it prices a finished design with the SAME cash-flow engine and returns ONE
+LCOE for the whole system (heat + cooling together).
+
 """
 
 import numpy as np
+from dataclasses import dataclass
 
 # ---------------------------------------------------------------------
 # Financial helpers
@@ -60,10 +65,6 @@ def loan_amortization_schedule(rate, nper, principal):
 # Capex building blocks
 # ---------------------------------------------------------------------
 
-# def well_cost_mln(depth_m, well_cost_scaling=1.5):
-#    """Drilling cost per well, mln euro."""
-#    return well_cost_scaling * (0.2 * depth_m ** 2 + 700 * depth_m + 250_000) * 1e-6
-
 def well_cost_mln(depth_m, well_cost_scaling=1.0):
     """
     Drilling cost per well, mln euro.
@@ -83,10 +84,6 @@ def subsurface_capex_mln(depth_m, n_wells, well_cost_scaling=1.0,
         n_pumps = n_wells
     wc = well_cost_mln(depth_m, well_cost_scaling)
     return (stim_cost_per_well_mln + wc) * n_wells + pump_investment_mln * n_pumps
-
-def heat_surface_capex_mln(heat_mwth, capex_rate_kEuro_per_mwth=150):
-    """Surface heat-plant capex, mln euro. Sheet row 43."""
-    return capex_rate_kEuro_per_mwth * heat_mwth / 1000
 
 def payback_period(equity_amount, net_revenue_series, discount_rate=None):
     """
@@ -111,133 +108,183 @@ def payback_period(equity_amount, net_revenue_series, discount_rate=None):
     return year_index + fraction
 
 # ---------------------------------------------------------------------
-# Main LCOE model
+# System-level cost
 # ---------------------------------------------------------------------
 
-def lcoe_heat(
-    heat_mwth,                      
-    depth_m,                   
-    n_wells=2,                      # number of wells (doublet = 2)
-    n_pumps=None,                   # defaults to n_wells
-    well_cost_scaling=1.0,
-    stim_cost_per_well_mln=0.0,     
-    pump_investment_mln=0.3,        # mln euro/pump
-    pump_replace_interval=5,        # years between pump workovers
-    heat_capex_rate_kEuro_per_mwth=150,
-    heat_loadhours=6000,            # full-load hours/year
-    electricity_price=150,          # euro/MWhe, drives O&M via COP
-    COP=27,
-    heat_OMvar_override=None,       # euro/MWhth, overrides electricity_price/COP calc
-    heat_OMfixed_rate=0.01,         # fraction of total capex, per year
-    complementary_heat_price=0.0,   # euro/GJ, for any exogenously-priced heat sold
-    lifetime=15,                    # years, economic project life (TNO ThermoGIS default)
-    depreciation_time=15,
-    term_loan=15,
-    loan_rate=0.05,                 # TNO ThermoGIS (2019): 5% interest on loan
-    equity_return=0.07,             # TNO ThermoGIS (2019): 7% required return on equity
-    equity_share=0.2,               # TNO ThermoGIS (2019): 80% debt ratio -> 20% equity
-    tax=0.25,                       # TNO ThermoGIS (2019): 25% tax rate
-    inflation=0.02,                  # TNO ThermoGIS (2019): 2% inflation
-    n_years=40,                     # simulation horizon (sheet uses 40)
-):
+@dataclass(frozen=True)
+class CostParams:
+    """All cost assumptions of the system study. Override with dataclasses.replace(CostParams(), esc=1.0)."""
+    stim_cost_per_well_mln: float = 0.25   # mln EUR per well (0.5 mln for both wells of a doublet)
+    C_surf_base: float = 3e6               # EUR per doublet, surface installation base cost
+    C_surf_kw: float = 300.0               # EUR per kW installed thermal power
+    contingency: float = 0.15              # on wells + pumps + surface installation
+    opex_kw: float = 60.0                  # EUR per kW per year
+    opex_mwh: float = 1.9                  # EUR per MWh geothermal heat (0.19 ct/kWh)
+    C_hp_kw: float = 200.0                 # EUR per kW heat pump capex
+    opex_hp_kw: float = 20.0               # EUR per kW per year heat pump opex
+    price_el: float = 80.0                 # EUR/MWh electricity (ThermoGIS: 8 ct/kWh)
+
+    lifetime: int = 30
+    depreciation_time: int = 15
+    term_loan: int = 15
+    loan_rate: float = 0.05
+    equity_return: float = 0.07
+    equity_share: float = 0.2
+    tax: float = 0.25
+    inflation: float = 0.02
+
+    pump_investment_mln: float = 0.3       # mln EUR per well pump. Set 0 if surface cost already covers pumps
+    pump_replace_interval: int = 5         # years between pump replacements
+
+    esc: float = 1.25                      # escalation 2019 -> 2026 on wells and surface plant
+    price_gas: float = 60.0                # EUR/MWh heat from the backup boiler (fuel)
+    C_boiler_MW: float = 0.1e6             # EUR per MW backup boiler
+    C_ch_MW: float = 0.3e6                 # EUR per MW electric chiller plant (no escalation applied)
+    # ---- ATES cooling option ----
+    C_ates_kW: float = 300.0               # EUR per kW installed capacity, Herrmann et al. 2025 (> 2 MW)
+    ates_esc: float = 1.0                  # > 1 if the benchmark is in older prices
+    ates_contingency: float = 0.0
+    opex_ates: float = 0.03                # fraction of ATES capex per year (2-5%, Dutch HT-ATES factsheet)
+
+
+def _timeline(p):
+    """Years 1..n, a mask for the operating years, and the inflation factor of each year."""
+    n = max(p.lifetime, p.term_loan, p.depreciation_time)
+    years = np.arange(1, n + 1)
+    return years, years <= p.lifetime, (1 + p.inflation) ** (years - 1)
+
+
+def _net_cash_flow(capex_eur, fixed_opex_eur, energy_cost_eur, pump_replace_eur, income, p):
+    """Cash flow to the equity investor, years 1..n. `income` is zeros when solving for the LCOE."""
+    years, active, infl = _timeline(p)
+    opex = np.where(active, -(fixed_opex_eur + energy_cost_eur) * infl, 0.0)
+    pump = np.where(active & (years % p.pump_replace_interval == 0), -pump_replace_eur * infl, 0.0)
+    gross = income + opex + pump
+
+    equity = p.equity_share * capex_eur
+    loan = capex_eur - equity
+    interest_s, principal_s = loan_amortization_schedule(p.loan_rate, p.term_loan, loan)
+    interest, principal = np.zeros(len(years)), np.zeros(len(years))
+    interest[:len(interest_s)], principal[:len(principal_s)] = interest_s, principal_s
+
+    depreciation = np.where(years <= p.depreciation_time, -capex_eur / p.depreciation_time, 0.0)
+    tax_paid = -p.tax * (gross + depreciation + interest)
+    return gross + interest + principal + tax_paid, equity
+
+
+def _price_project(capex_eur, fixed_opex_eur, energy_cost_eur, pump_replace_eur, energy_GJ, p):
+    """Flat price in EUR/GJ that makes the equity investor's NPV equal to the equity outlay."""
+    years, active, infl = _timeline(p)
+    net, equity = _net_cash_flow(capex_eur, fixed_opex_eur, energy_cost_eur, pump_replace_eur,
+                                 np.zeros(len(years)), p)
+    energy_after_tax = np.where(active, (1 - p.tax) * energy_GJ, 0.0)
+    return (equity - npv(p.equity_return, net)) / npv(p.equity_return, energy_after_tax)
+
+
+def system_cost(D, p=None, sell_price=None, price_indexed=True):
     """
-    Returns a dict with LCOE (€/GJ and €/MWh_th) plus the intermediate
-    capex/cash-flow quantities, for a direct-heat geothermal project.
+    Price a finished design and return ONE LCOE for the whole system (heat + cooling).
+
+    D is the dict returned by design_system() in the notebook. Keys used:
+      wells (dict of well dicts with "Depth"), stim, hp, cooling ("electric" or "ates"),
+      P_wells_MW, backup_MW, chiller_MW, cool_MW,
+      E_wells, E_gas, E_heat, E_cool (MWh/yr), el_wells, el_cool (MWh/yr).
     """
-    if n_pumps is None:
-        n_pumps = n_wells
+    p = p or CostParams()
+    n = len(D["wells"])
+    P_w = D["P_wells_MW"]
 
-    # --- Capex ---
-    capex_sub = subsurface_capex_mln(depth_m, n_wells, well_cost_scaling,
-                                      stim_cost_per_well_mln,
-                                      pump_investment_mln, n_pumps)
-    capex_heat = heat_surface_capex_mln(heat_mwth, heat_capex_rate_kEuro_per_mwth)
-    total_capex_mln = capex_sub + capex_heat
-    total_capex_eur = total_capex_mln * 1e6
+    # ---- capex (EUR), all spent in year 0 ----
+    wells_pumps = 1e6 * sum(subsurface_capex_mln(w["Depth"], 2, p.esc, 0.0, p.pump_investment_mln)
+                            for w in D["wells"].values())
+    surface = p.esc * (n * p.C_surf_base + p.C_surf_kw * P_w * 1000)
+    stim = n * 2 * p.stim_cost_per_well_mln * 1e6 if D["stim"] else 0.0
+    cap_geo = (wells_pumps + surface) * (1 + p.contingency) + stim \
+              + (p.C_hp_kw * P_w * 1000 if D["hp"] else 0.0)
+    cap_backup = p.C_boiler_MW * D["backup_MW"]
+    if D["cooling"] == "ates":
+        cap_cool = p.ates_esc * p.C_ates_kW * D["cool_MW"] * 1000 * (1 + p.ates_contingency)
+    else:
+        cap_cool = p.C_ch_MW * D["chiller_MW"]
+    capex = cap_geo + cap_backup + cap_cool
 
-    equity_amount = equity_share * total_capex_eur
-    loan_amount = (1 - equity_share) * total_capex_eur
+    # ---- yearly costs in year-1 money (inflated inside the engine) ----
+    fixed_opex = (p.opex_kw * P_w * 1000 + p.opex_mwh * D["E_wells"]
+                  + (p.opex_hp_kw * P_w * 1000 if D["hp"] else 0.0)
+                  + (p.opex_ates * cap_cool if D["cooling"] == "ates" else 0.0))
+    energy_cost = p.price_el * (D["el_wells"] + D["el_cool"]) + p.price_gas * D["E_gas"]
+    pump_replace = n * 2 * p.pump_investment_mln * 1e6
 
-    # --- Variable O&M rate (euro/MWhth), from electricity cost to drive pumps ---
-    heat_OMvar = heat_OMvar_override if heat_OMvar_override is not None else electricity_price / COP
+    useful_MWh = D["E_heat"] + D["E_cool"]                       # all useful energy, heat + cooling
+    lcoe_GJ = _price_project(capex, fixed_opex, energy_cost, pump_replace, useful_MWh * 3.6, p)
+    lcoe_MWh = lcoe_GJ * 3.6
 
-    # --- Debt schedule ---
-    interest_sched, principal_sched = loan_amortization_schedule(loan_rate, term_loan, loan_amount)
+    payback = {}
+    if sell_price is not None:
+        years, active, infl = _timeline(p)
+        income = np.where(active, sell_price * useful_MWh * (infl if price_indexed else 1.0), 0.0)
+        net, equity = _net_cash_flow(capex, fixed_opex, energy_cost, pump_replace, income, p)
+        payback = dict(payback_years=payback_period(equity, net),
+                       payback_discounted_years=payback_period(equity, net, discount_rate=p.equity_return))
 
-    # --- Year-by-year cash flow, years 1..n_years (year 0 = investment only) ---
-    heat_GJ = np.zeros(n_years)
-    opex = np.zeros(n_years)
-    pump_capex = np.zeros(n_years)
-    income = np.zeros(n_years)
+    return dict(
+        **payback,
+        capex_M=capex / 1e6,
+        annual_M=lcoe_MWh * useful_MWh / 1e6,                    # flat revenue needed per year (nominal)
+        useful_GWh=useful_MWh / 1e3,
+        LCOE_system=lcoe_MWh,                                    # EUR/MWh of heat + cooling
+        LCOE_eur_per_GJ=lcoe_GJ,
+        equity_M=p.equity_share * capex / 1e6,
+        capex_split_M=dict(geothermal=cap_geo / 1e6, backup=cap_backup / 1e6, cooling=cap_cool / 1e6),
+        year1_costs_M=dict(fixed_opex=fixed_opex / 1e6, energy=energy_cost / 1e6),
+    )
 
-    pump_replace_cost_eur = pump_investment_mln * n_pumps * 1e6
+def cost_breakdown(D, p=None):
+    """Capex items (M EUR) and the LCOE split (EUR/MWh). The split adds up exactly to LCOE_system."""
+    p = p or CostParams()
+    n, P_w = len(D["wells"]), D["P_wells_MW"]
 
-    for i in range(n_years):
-        year = i + 1
-        active = year <= lifetime
-        infl = (1 + inflation) ** (year - 1)
+    wells = 1e6 * sum(2 * well_cost_mln(w["Depth"], p.esc) for w in D["wells"].values())
+    pumps = n * 2 * p.pump_investment_mln * 1e6
+    surface = p.esc * (n * p.C_surf_base + p.C_surf_kw * P_w * 1000)
+    contingency = p.contingency * (wells + pumps + surface)
+    stim = n * 2 * p.stim_cost_per_well_mln * 1e6 if D["stim"] else 0.0
+    heat_pump = p.C_hp_kw * P_w * 1000 if D["hp"] else 0.0
+    backup = p.C_boiler_MW * D["backup_MW"]
+    if D["cooling"] == "ates":
+        cooling = p.ates_esc * p.C_ates_kW * D["cool_MW"] * 1000 * (1 + p.ates_contingency)
+    else:
+        cooling = p.C_ch_MW * D["chiller_MW"]
+    items = dict(wells=wells, pumps=pumps, surface=surface, contingency=contingency,
+                 stimulation=stim, heat_pump=heat_pump, backup_boiler=backup, cooling_plant=cooling)
+    capex = sum(items.values())
 
-        if active:
-            heat_GJ[i] = heat_mwth * heat_loadhours * 3.6
-            fixed_om = heat_OMfixed_rate * total_capex_eur
-            variable_om = heat_mwth * heat_loadhours * heat_OMvar
-            opex[i] = -(fixed_om + variable_om) * infl
+    fixed_opex = (p.opex_kw * P_w * 1000 + p.opex_mwh * D["E_wells"]
+                  + (p.opex_hp_kw * P_w * 1000 if D["hp"] else 0.0)
+                  + (p.opex_ates * cooling if D["cooling"] == "ates" else 0.0))
+    electricity = p.price_el * (D["el_wells"] + D["el_cool"])
+    gas = p.price_gas * D["E_gas"]
+    pump_replace = n * 2 * p.pump_investment_mln * 1e6
 
-            if year % pump_replace_interval == 0:
-                pump_capex[i] = -pump_replace_cost_eur * infl
+    years, active, infl = _timeline(p)
+    useful_GJ = (D["E_heat"] + D["E_cool"]) * 3.6
+    energy_after_tax = np.where(active, (1 - p.tax) * useful_GJ, 0.0)
 
-            income[i] = complementary_heat_price * heat_GJ[i] * infl
+    def part(capex_, fixed_, energy_, pump_):
+        net, equity = _net_cash_flow(capex_, fixed_, energy_, pump_, np.zeros(len(years)), p)
+        return 3.6 * (equity - npv(p.equity_return, net)) / npv(p.equity_return, energy_after_tax)
 
-    total_costs = opex + pump_capex
-    gross_revenue = income + total_costs
+    split = {"Capital (wells, plant, financing)": part(capex, 0, 0, 0),
+             "Fixed O&M": part(0, fixed_opex, 0, 0),
+             "Electricity": part(0, 0, electricity, 0),
+             "Backup gas": part(0, 0, gas, 0),
+             "Pump replacement": part(0, 0, 0, pump_replace)}
+    return dict(capex_M={k: v / 1e6 for k, v in items.items()}, lcoe_split=split)
 
-    depreciation = np.array([
-        -total_capex_eur / depreciation_time if (i + 1) <= depreciation_time else 0.0
-        for i in range(n_years)
-    ])
-
-    interest = np.zeros(n_years)
-    principal = np.zeros(n_years)
-    interest[:len(interest_sched)] = interest_sched
-    principal[:len(principal_sched)] = principal_sched
-    loan_charges = interest + principal
-
-    taxable_income = gross_revenue + depreciation + interest
-    tax_paid = -tax * taxable_income
-    net_revenue = gross_revenue + loan_charges + tax_paid
-    after_tax_energy_GJ = (1 - tax) * heat_GJ
-
-    discounted_revenue = npv(equity_return, net_revenue)
-    discounted_energy_GJ = npv(equity_return, after_tax_energy_GJ)
-
-    lcoe_per_GJ = (equity_amount - discounted_revenue) / discounted_energy_GJ
-    lcoe_per_MWh_th = lcoe_per_GJ * 3.6
-
-    return {
-        "LCOE_eur_per_GJ": lcoe_per_GJ,
-        "LCOE_eur_per_MWhth": lcoe_per_MWh_th,
-        "capex_subsurface_mln": capex_sub,
-        "capex_heat_plant_mln": capex_heat,
-        "total_capex_mln": total_capex_mln,
-        "equity_amount_eur": equity_amount,
-        "loan_amount_eur": loan_amount,
-        "discounted_net_revenue_eur": discounted_revenue,
-        "discounted_energy_GJ": discounted_energy_GJ,
-        "heat_OMvar_eur_per_MWhth": heat_OMvar,
-        "net_revenue_series": net_revenue,
-        "equity_amount_eur": equity_amount,
-    }
-
-
-if __name__ == "__main__":
-    result = lcoe_heat(heat_mwth=8.26, depth_m=1800, n_wells=2,
-                        stim_cost_per_well_mln=0.075)  # e.g. half of the 150k acidizing cost per well
-
-    simple_pb = payback_period(result["equity_amount_eur"], result["net_revenue_series"])
-    discounted_pb = payback_period(result["equity_amount_eur"], result["net_revenue_series"], discount_rate=0.15)
-
-    print(f"Simple payback: {simple_pb:.1f} years")
-    print(f"Discounted payback: {discounted_pb:.1f} years")
-
-    for k, v in result.items():
-        print(f"{k}: {v:,.2f}" if isinstance(v, float) else f"{k}: {v}")
+def baseline_cost(E_heat, E_cool, heat_peak, cool_peak, COP_ch, p=None):
+    """LCOE (EUR/MWh) of the reference system: gas boiler for heat + electric chillers for cooling,
+    priced with the same cash-flow engine."""
+    p = p or CostParams()
+    capex = p.C_boiler_MW * heat_peak + p.C_ch_MW * cool_peak
+    energy_cost = p.price_gas * E_heat + p.price_el * E_cool / COP_ch
+    return 3.6 * _price_project(capex, 0.0, energy_cost, 0.0, (E_heat + E_cool) * 3.6, p)
