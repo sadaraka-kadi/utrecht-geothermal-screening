@@ -50,7 +50,6 @@ git clone https://github.com/sadaraka-kadi/utrecht-geothermal-screening.git
 2. Install dependencies:
 ```bash
 pip install -r requirements.txt
-pip install pythermogis --index-url https://ci.tno.nl/gitlab/api/v4/projects/18271/packages/pypi/simple
 ```
 
 3. Download large data files — see [`data/raw/README.md`](data/raw/README.md) for instructions
@@ -63,7 +62,7 @@ pip install pythermogis --index-url https://ci.tno.nl/gitlab/api/v4/projects/182
 04_power_economics.ipynb
 ```
 
-> **Note:** Run cells in order within each notebook. Processed files will be automatically saved to `data/processed/` and simulation outputs to `outputs/`.
+> **Note:** Run cells in order within each notebook. Processed files will be automatically saved to `data/processed/`, results to `results/` and figures to `results/figures/`.
 
 ---
 
@@ -95,11 +94,11 @@ See [`requirements.txt`](requirements.txt) for the full list. Key libraries:
 
 ## AI Assistance Disclosure
 
-This project used Claude (by Anthropic) as an AI assistant to support code development. All simulation results, parameter selections, subsurface interpretations, and conclusions were independently verified and validated by the team. The analysis, findings, and recommendations remain the responsibility of the project contributors.
+This project used Claude (by Anthropic) as an AI assistant to support code development. All simulation results, parameter selections, subsurface interpretations, and conclusions were independently verified and validated by the author. The analysis, findings, and recommendations remain the responsibility of the project contributors.
 
 ---
 
 ## License
 
 This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
-Terms for every dataset and third-party component is in [DATA_LICENSE](DATA_LICENSE.md)
+Datasets and third-party components keep their own terms, listed in [DATA_LICENSE](DATA_LICENSE.md)
