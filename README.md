@@ -1,28 +1,23 @@
-# **Geothermal Energy Assessment & Site Screening — Utrecht, Netherlands**
-
-This repository contains Kadi Sadaraka's refinement and further development of Team KDK's submission for the SPE Africa Datathon 2026, analysing geothermal energy data from Utrecht, Netherlands.
-
-The work builds upon the team's original submission while extending and refining selected aspects of the analysis, modelling, and interpretation.
-
-Original team submission: Team KDK https://github.com/sadaraka-kadi/Team_KDK
-
----
-
+# Geothermal Energy Assessment & Site Screening — Utrecht, Netherlands
 ## Project Overview
 
+This project integrates machine learning petrophysics, multi-criteria reservoir ranking, and technoeconomic optimization to assess geothermal development opportunities in the Utrecht region.
+
+## Key Results
+
+- The workflow evaluates whether the Slochteren aquifer can support commercially viable geothermal doublets for district heating and cooling.
+- The analysis combines subsurface characterization, reservoir-quality screening, and economic viability assessment for candidate development locations.
+
 ---
+
 ## Problem Statement
 
-Utrecht, Netherlands seeks to develop its geothermal resources to meet urban 
-district heating and cooling demand. The challenge is to assess whether the 
-Slochteren aquifer (ROSL_ROSLU) can deliver:
+Utrecht, Netherlands seeks to develop its geothermal resources to meet urban district heating and cooling demand. The challenge is to assess whether the Slochteren aquifer (ROSL_ROSLU) can deliver:
 
 - ≥ 10 MWth for district heating
 - ≥ 5 MWth for district cooling
 
-using commercially viable doublet configurations, and to identify the optimal 
-enhancement scenario and development locations that meet these targets 
-economically.
+using commercially viable doublet configurations, and to identify the optimal enhancement scenario and development locations that meet these targets economically.
 
 ---
 
@@ -44,7 +39,7 @@ economically.
 
 ### 3. ThermoGIS Grids (`.nc` files)
 - **Used by:** `utrecht_formation_coverage.ipynb` and `reservoir_quality_assessment.ipynb`
-- **Download:** https://www.thermogis.nl/sites/default/files/2026-05/for_external_use.zip)
+- **Download:** https://www.thermogis.nl/sites/default/files/2026-05/for_external_use.zip
 
 ## Setup & Usage
 
@@ -55,7 +50,7 @@ economically.
 
 1. Clone or download the repository:
 ```bash
-git clone 
+git clone https://github.com/sadaraka-kadi/utrecht-geothermal-screening.git
 ```
 
 2. Install dependencies:
@@ -67,7 +62,7 @@ pip install pythermogis --index-url https://ci.tno.nl/gitlab/api/v4/projects/182
 3. Download large data files — see [`data/raw/README.md`](data/raw/README.md) for instructions
 
 4. Run notebooks in order from the `notebooks/` folder:
-```
+```bash
 01_data_exploration.ipynb
 02_utrecht_formation_coverage.ipynb
 03_reservoir_quality_assessment.ipynb
@@ -98,6 +93,7 @@ See [`requirements.txt`](requirements.txt) for the full list. Key libraries:
 | `shapely` | Geometric operations |
 
 ---
+
 ## Acknowledgements / Technical recommendations
 
 - Dr. Daniel Wamriew
@@ -105,8 +101,7 @@ See [`requirements.txt`](requirements.txt) for the full list. Key libraries:
 
 ## AI Assistance Disclosure
 
-This project used Claude (by Anthropic) as an AI assistant to support code 
-development. All simulation results, parameter selections, subsurface interpretations, and conclusions were independently verified and validated by the team. The analysis, findings, and recommendations represent the original work of Team KDK.
+This project used Claude (by Anthropic) as an AI assistant to support code development. All simulation results, parameter selections, subsurface interpretations, and conclusions were independently verified and validated by the team. The analysis, findings, and recommendations remain the responsibility of the project contributors.
 
 ---
 
