@@ -3,8 +3,8 @@
 ## Large files — download manually before running notebooks
 
 ### 1. Participant Data Pack
-(a.) BLT-01.las, EVD-01.las, JUT-01.las, PKP-01.las
-b. LCOE.xslx
+i. BLT-01.las, EVD-01.las, JUT-01.las, PKP-01.las
+ii. LCOE.xslx
 c. Lithostratigraphic Data.xslx
 d. ThermoGIS Data.xslx
 e. Well Path Data.xlsx
