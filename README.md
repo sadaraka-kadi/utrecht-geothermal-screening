@@ -19,16 +19,21 @@ using commercially viable doublet configurations, and to identify the optimal en
 ---
 ## Key Results
 
-- The preferred design is one stimulated doublet at BLT-01 with a 60 bar drawdown and 211 m3/h flow
+- The preferred design is one stimulated doublet at BLT-01 with a 60 bar drawdown and 211 m3/h flow.
 - The design gives 12.2 MWth in the deterministic case, with surface electric chillers for the 5 MWth cooling load. 
 - A Monte Carlo run over ThermoGIS transmissivity gives a 56% probability that the wells alone reach 10 MWth, a median of 12.7 MWth and a low case (P90) of 1.7 MWth.
-- The whole-system capital cost is 23.3 M€, LCOE is 69€/MWh against 68€/MWh for a gas and chiller baseline
+- The whole-system capital cost is 23.3 M€, LCOE is 69€/MWh against 68€/MWh for a gas and chiller baseline.
+- Cooling comes from surface shillers, not from the aquifer.
+- Conclusion: the design is marginal and unproven. A well test at BLT-01 is the logical next step, because transmissivity uncertainty there is the dominant risk.
+
+```
+Note on probablities: 56% comes from the final Monte Carlo (BLT-01 log-standard deviation 1.53). [results/scenarios_cost.csv](results/scenarios_cost.csv) shows 0.53 for the same design because the 32-scenario screening used a log-standard deviation of 0.5. The two are not directly comparable. See the report
+```
 
 ---
 
 ## Data
-
-> ⚠️ Some raw data files are too large to include in this repo. See [`data/raw/README.md`](data/raw/README.md).
+The raw and processed data used by the notebooks are included in [data/](data/). To referesh them from the original sources, see [`data/raw/README.md`](data/raw/README.md). Sources and terms for each dataset are in [DATA_LICENSE](DATA_LICENSE.md)
 
 ## Setup & Usage
 
