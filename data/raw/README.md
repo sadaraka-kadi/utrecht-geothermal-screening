@@ -8,7 +8,7 @@
 #### iii. Lithostratigraphic Data.xslx
 #### iv. ThermoGIS Data.xslx
 #### v. Well Path Data.xlsx
-#### vi. target_lithologiies.csv
+#### vi. target_lithologies.csv
 - **Used by:** `data_exploration.ipynb`, `reservoir_quality_assessment.ipynb`, `LCOE.py`
 - **Download:** https://drive.google.com/drive/folders/1fGN5C8G8wzzxA7wULrz1Wn-xCw1eKTku
 - Unzip and place files in this folder (`data/raw`)
