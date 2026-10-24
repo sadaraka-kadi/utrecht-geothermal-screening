@@ -78,7 +78,6 @@ See [`requirements.txt`](requirements.txt) for the full list. Key libraries:
 | `geopandas` | Geospatial data processing |
 | `xarray` | Reading NetCDF grid files |
 | `matplotlib` | Plotting and figures |
-| `pythermogis` | ThermoGIS geothermal simulation |
 | `pygridsio` | Reading ThermoGIS grid files |
 | `rioxarray` | Raster clipping and CRS handling |
 | `shapely` | Geometric operations |
