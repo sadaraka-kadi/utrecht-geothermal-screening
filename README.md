@@ -21,25 +21,9 @@ using commercially viable doublet configurations, and to identify the optimal en
 
 ---
 
-## Repository Structure
+## Data
 
 > ⚠️ Some raw data files are too large to include in this repo. See [`data/raw/README.md`](data/raw/README.md).
-
-## Large files — download manually before running notebooks
-
-### 1. Participant Data Pack
-- **Used by:** `well_data_preprocessing.ipynb`
-- **Download:** https://drive.google.com/drive/folders/1fGN5C8G8wzzxA7wULrz1Wn-xCw1eKTku
-- Unzip and place files in this folder (`data/raw`)
-
-### 2. Administrative Boundaries (`administrativeunits.gml`)
-- **Used by:** `utrecht_formation_coverage.ipynb`
-- **Download:** https://service.pdok.nl/kadaster/brk-administratieve-eenheden/atom/downloads/administrativeunits.zip
-- Unzip and place `administrativeunits.gml` in this folder (`data/raw/`)
-
-### 3. ThermoGIS Grids (`.nc` files)
-- **Used by:** `utrecht_formation_coverage.ipynb` and `reservoir_quality_assessment.ipynb`
-- **Download:** https://www.thermogis.nl/sites/default/files/2026-05/for_external_use.zip
 
 ## Setup & Usage
 
