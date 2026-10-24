@@ -8,9 +8,10 @@ The files below are already included in this folder. Use these instructions only
 - ThermoGIS Data.xslx
 - Well Path Data.xlsx
 - target_lithologies.csv
-> **Used by:** `data_exploration.ipynb`, `reservoir_quality_assessment.ipynb`, `LCOE.py`
-> **Download:** https://drive.google.com/drive/folders/1fGN5C8G8wzzxA7wULrz1Wn-xCw1eKTku
-> Unzip and place files in this folder (`data/raw`)
+
+- **Used by:** `data_exploration.ipynb`, `reservoir_quality_assessment.ipynb`, `LCOE.py`
+- **Download:** https://drive.google.com/drive/folders/1fGN5C8G8wzzxA7wULrz1Wn-xCw1eKTku
+- Unzip and place files in this folder (`data/raw`)
 
 ## 2. Administrative Boundaries (`administrativeunits.gml`)
 - **Used by:** `utrecht_formation_coverage.ipynb`
