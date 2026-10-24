@@ -95,3 +95,4 @@ This project used Claude (by Anthropic) as an AI assistant to support code devel
 ## License
 
 This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+Terms for every dataset and third-party component is in [DATA_LICENSE](DATA_LICENSE.md)
