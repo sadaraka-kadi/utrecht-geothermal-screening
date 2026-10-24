@@ -74,13 +74,9 @@ See [`requirements.txt`](requirements.txt) for the full list. Key libraries:
 | `numpy` | Numerical computing |
 | `lasio` | Reading LAS well log files |
 | `scikit-learn` | Machine learning (Random Forest) |
-| `openpyxl` | Reading Excel well path data |
 | `geopandas` | Geospatial data processing |
 | `xarray` | Reading NetCDF grid files |
 | `matplotlib` | Plotting and figures |
-| `pygridsio` | Reading ThermoGIS grid files |
-| `rioxarray` | Raster clipping and CRS handling |
-| `shapely` | Geometric operations |
 
 ---
 
