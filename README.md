@@ -27,7 +27,7 @@ using commercially viable doublet configurations, and to identify the optimal en
 - Conclusion: the design is marginal and unproven. A well test at BLT-01 is the logical next step, because transmissivity uncertainty there is the dominant risk.
 
 ```
-Note on probablities: 56% comes from the final Monte Carlo (BLT-01 log-standard deviation 1.53). [results/scenarios_cost.csv](results/scenarios_cost.csv) shows 0.53 for the same design because the 32-scenario screening used a log-standard deviation of 0.5. The two are not directly comparable. See the report
+Note on probablities: 56% comes from the final Monte Carlo (BLT-01 log-standard deviation 1.53). `results/scenarios_cost.csv` shows 0.53 for the same design because the 32-scenario screening used a log-standard deviation of 0.5. The two are not directly comparable. See the report
 ```
 
 ---
