@@ -3,12 +3,12 @@
 ## Large files — download manually before running notebooks
 
 ### 1. Participant Data Pack
-- **Used by:** `well_data_preprocessing.ipynb`
+- **Used by:** `data_exploration.ipynb`, `reservoir_quality_assessment.ipynb`
 - **Download:** https://drive.google.com/drive/folders/1fGN5C8G8wzzxA7wULrz1Wn-xCw1eKTku
 - Unzip and place files in this folder (`data/raw`)
 
 ### 2. Administrative Boundaries (`administrativeunits.gml`)
-- **Used by:** `utrecht_boundary_extraction.ipynb`
+- **Used by:** `utrecht_formation_coverage.ipynb`
 - **Download:** https://service.pdok.nl/kadaster/brk-administratieve-eenheden/atom/downloads/administrativeunits.zip
 - Unzip and place `administrativeunits.gml` in this folder (`data/raw/`)
 
