@@ -3,11 +3,6 @@
 
 This project integrates machine learning petrophysics, multi-criteria reservoir ranking, and technoeconomic optimization to assess geothermal development opportunities in the Utrecht region.
 
-## Key Results
-
-- The workflow evaluates whether the Slochteren aquifer can support commercially viable geothermal doublets for district heating and cooling.
-- The analysis combines subsurface characterization, reservoir-quality screening, and economic viability assessment for candidate development locations.
-
 ---
 
 ## Problem Statement
@@ -18,6 +13,14 @@ Utrecht, Netherlands seeks to develop its geothermal resources to meet urban dis
 - ≥ 5 MWth for district cooling
 
 using commercially viable doublet configurations, and to identify the optimal enhancement scenario and development locations that meet these targets economically.
+
+---
+## Key Results
+
+- The preferred design is one stimulated doublet at BLT-01 with a 60 bar drawdown and 211 m3/h flow
+- The design gives 12.2 MWth in the deterministic case, with surface electric chillers for the 5 MWth cooling load. 
+- A Monte Carlo run over ThermoGIS transmissivity gives a 56% probability that the wells alone reach 10 MWth, a median of 12.7 MWth and a low case (P90) of 1.7 MWth.
+- The whole-system capital cost is 23.3 M€, LCOE is 69€/MWh against 68€/MWh for a gas and chiller baseline
 
 ---
 
