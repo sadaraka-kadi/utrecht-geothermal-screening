@@ -1,7 +1,9 @@
 # Geothermal Energy Assessment & Site Screening — Utrecht, Netherlands
 ## Project Overview
 
-This project integrates machine learning petrophysics, multi-criteria reservoir ranking, and technoeconomic optimization to assess geothermal development opportunities in the Utrecht region.
+This project screens the Slochteren aquifer (ROSL_ROSLU) for geothermal doublet development in the Utrecht region. It combines porosity prediction from well logs (validated by leave-one-well-out cross-validation), multi-criteria ranking of four wells, a Monte Carlo treatment of transmissivity uncertainty, and a cost comparison of 32 design scenarios.
+
+The full write-up is in [reports/report.pdf], 
 
 ---
 
