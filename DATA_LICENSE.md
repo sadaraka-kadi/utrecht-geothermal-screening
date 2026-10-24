@@ -10,10 +10,3 @@ project. Every dataset and third-party component below keeps its own terms.
 | Well logs and tables (`BLT-01`, `JUT-01`, `EVD-01`, `PKP-01` `.las`; `Well Path Data.xlsx`; `Lithostratigraphic Data.xlsx`; `target_lithologies.csv`) | Petrophysics, porosity prediction | SPE Africa Geothermal Datathon 2026 participant data pack |EPOS-NL,  public well-data publication, states no licence |
 | `LCOE.xlsx` and `src/lcoe.py` | Cost model | J.-D. van Wees, L. ten Kulve, D. Straathof, M. Pluymaekers (TNO/ECN), 2011, version 2012.1 | No licence found. `lcoe.py` is a translation of this spreadsheet, so it is a derivative work |
 | Well cost formula in `lcoe.py` | Drilling capex | Vrijlandt et al., ThermoGIS update, European Geothermal Congress 2019 | Published formula, well capex = 375,000 + 1150*d + 0.3*d^2   (euro, d = depth in m) |
-
-## Attribution to include in the README and report
-
-- Boundaries: Kadaster / PDOK, BRK administratieve eenheden, CC0 1.0.
-- ThermoGIS: TNO Geological Survey of the Netherlands. Source: NLOG.NL / ThermoGIS.
-- Wells and datathon data: SPE Africa Geothermal Datathon 2026 data pack (organiser-supplied).
-- Cost model: van Wees et al. (TNO/ECN, 2011).
