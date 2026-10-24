@@ -13,12 +13,12 @@ The files below are already included in this folder. Use these instructions only
 Unzip and place files in this folder (`data/raw`)
 
 ## 2. Administrative Boundaries (`administrativeunits.gml`)
-**Used by:** `utrecht_formation_coverage.ipynb`
-**Download:** https://service.pdok.nl/kadaster/brk-administratieve-eenheden/atom/downloads/administrativeunits.zip
-Unzip and place `administrativeunits.gml` in this folder (`data/raw/`)
+- **Used by:** `utrecht_formation_coverage.ipynb`
+- **Download:** https://service.pdok.nl/kadaster/brk-administratieve-eenheden/atom/downloads/administrativeunits.zip
+- Unzip and place `administrativeunits.gml` in this folder (`data/raw/`)
 
 ## 3. ThermoGIS Grids (`.nc` files)
-**Used by:** `utrecht_formation_coverage.ipynb`
-**Download:** https://www.thermogis.nl/sites/default/files/2026-05/for_external_use.zip)
+- **Used by:** `utrecht_formation_coverage.ipynb`
+- **Download:** https://www.thermogis.nl/sites/default/files/2026-05/for_external_use.zip)
 - Navigate to: `ThermoGIS_grids_2_5_1 > 6_Permian > Slochteren Fm & Upper Slochteren Mb (ROSL&ROSLU) > BaseCase`
 - Place all `.nc` files in this folder (`data/raw/`)
