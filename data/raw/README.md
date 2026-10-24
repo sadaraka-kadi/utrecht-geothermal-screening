@@ -3,7 +3,13 @@
 ## Large files — download manually before running notebooks
 
 ### 1. Participant Data Pack
-- **Used by:** `data_exploration.ipynb`, `reservoir_quality_assessment.ipynb`
+a. BLT-01.las, EVD-01.las, JUT-01.las, PKP-01.las
+b. LCOE.xslx
+c. Lithostratigraphic Data.xslx
+d. ThermoGIS Data.xslx
+e. Well Path Data.xlsx
+f. target_lithologiies.csv
+- **Used by:** `data_exploration.ipynb`, `reservoir_quality_assessment.ipynb`, `LCOE.py`
 - **Download:** https://drive.google.com/drive/folders/1fGN5C8G8wzzxA7wULrz1Wn-xCw1eKTku
 - Unzip and place files in this folder (`data/raw`)
 
