@@ -140,11 +140,6 @@ class CostParams:
     price_gas: float = 60.0                # EUR/MWh heat from the backup boiler (fuel)
     C_boiler_MW: float = 0.1e6             # EUR per MW backup boiler
     C_ch_MW: float = 0.3e6                 # EUR per MW electric chiller plant (no escalation applied)
-    # ---- ATES cooling option ----
-    C_ates_kW: float = 300.0               # EUR per kW installed capacity, Herrmann et al. 2025 (> 2 MW)
-    ates_esc: float = 1.0                  # > 1 if the benchmark is in older prices
-    ates_contingency: float = 0.0
-    opex_ates: float = 0.03                # fraction of ATES capex per year (2-5%, Dutch HT-ATES factsheet)
 
 
 def _timeline(p):
@@ -186,8 +181,8 @@ def system_cost(D, p=None, sell_price=None, price_indexed=True):
     Price a finished design and return ONE LCOE for the whole system (heat + cooling).
 
     D is the dict returned by design_system() in the notebook. Keys used:
-      wells (dict of well dicts with "Depth"), stim, hp, cooling ("electric" or "ates"),
-      P_wells_MW, backup_MW, chiller_MW, cool_MW,
+      wells (dict of well dicts with "Depth"), stim, hp, cooling ("electric"),
+      P_wells_MW, backup_MW, chiller_MW,
       E_wells, E_gas, E_heat, E_cool (MWh/yr), el_wells, el_cool (MWh/yr).
     """
     p = p or CostParams()
@@ -202,16 +197,12 @@ def system_cost(D, p=None, sell_price=None, price_indexed=True):
     cap_geo = (wells_pumps + surface) * (1 + p.contingency) + stim \
               + (p.C_hp_kw * P_w * 1000 if D["hp"] else 0.0)
     cap_backup = p.C_boiler_MW * D["backup_MW"]
-    if D["cooling"] == "ates":
-        cap_cool = p.ates_esc * p.C_ates_kW * D["cool_MW"] * 1000 * (1 + p.ates_contingency)
-    else:
-        cap_cool = p.C_ch_MW * D["chiller_MW"]
+    cap_cool = p.C_ch_MW * D["chiller_MW"]
     capex = cap_geo + cap_backup + cap_cool
 
     # ---- yearly costs in year-1 money (inflated inside the engine) ----
     fixed_opex = (p.opex_kw * P_w * 1000 + p.opex_mwh * D["E_wells"]
-                  + (p.opex_hp_kw * P_w * 1000 if D["hp"] else 0.0)
-                  + (p.opex_ates * cap_cool if D["cooling"] == "ates" else 0.0))
+                  + (p.opex_hp_kw * P_w * 1000 if D["hp"] else 0.0))
     energy_cost = p.price_el * (D["el_wells"] + D["el_cool"]) + p.price_gas * D["E_gas"]
     pump_replace = n * 2 * p.pump_investment_mln * 1e6
 
@@ -251,17 +242,14 @@ def cost_breakdown(D, p=None):
     stim = n * 2 * p.stim_cost_per_well_mln * 1e6 if D["stim"] else 0.0
     heat_pump = p.C_hp_kw * P_w * 1000 if D["hp"] else 0.0
     backup = p.C_boiler_MW * D["backup_MW"]
-    if D["cooling"] == "ates":
-        cooling = p.ates_esc * p.C_ates_kW * D["cool_MW"] * 1000 * (1 + p.ates_contingency)
-    else:
-        cooling = p.C_ch_MW * D["chiller_MW"]
+    cooling = p.C_ch_MW * D["chiller_MW"]
     items = dict(wells=wells, pumps=pumps, surface=surface, contingency=contingency,
                  stimulation=stim, heat_pump=heat_pump, backup_boiler=backup, cooling_plant=cooling)
     capex = sum(items.values())
 
     fixed_opex = (p.opex_kw * P_w * 1000 + p.opex_mwh * D["E_wells"]
-                  + (p.opex_hp_kw * P_w * 1000 if D["hp"] else 0.0)
-                  + (p.opex_ates * cooling if D["cooling"] == "ates" else 0.0))
+                  + (p.opex_hp_kw * P_w * 1000 if D["hp"] else 0.0))
+    
     electricity = p.price_el * (D["el_wells"] + D["el_cool"])
     gas = p.price_gas * D["E_gas"]
     pump_replace = n * 2 * p.pump_investment_mln * 1e6
