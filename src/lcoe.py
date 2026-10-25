@@ -2,13 +2,13 @@
 
 Geothermal direct-heat LCOE model.
 
-Translated from LCOE.xlsx
+Adapted from LCOE.xlsx
 Authors: Jan-Diederik van Wees, Lars ten Kulve, Derk Straathof, Maarten Pluymaekers 
 Date: 10-07-2011
 Sources: Cash flow methodology is largely based on dutch economic models and spreadsheets developed by Energie Centrum Nederland (ECN, www.ecn.nl)
 Version: 2012.1
 
-Reproduces:
+Implements:
   - subsurface capex (well drilling cost scaling + stimulation + pumps)
   - surface heat-plant capex
   - annual cash flows over the project lifetime (revenue, opex, depreciation,
