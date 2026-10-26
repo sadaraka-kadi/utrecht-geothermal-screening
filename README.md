@@ -85,10 +85,6 @@ See [`requirements.txt`](requirements.txt) for the full list. Key libraries:
 - Dr. Daniel Wamriew
 - Elias Drescher
 
-## AI Assistance Disclosure
-
-This project used Claude (by Anthropic) as an AI assistant to support code development. All simulation results, parameter selections, subsurface interpretations, and conclusions were independently verified and validated by the author. The analysis, findings, and recommendations remain the responsibility of the project contributor.
-
 ---
 
 ## License
